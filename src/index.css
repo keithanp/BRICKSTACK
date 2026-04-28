@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply font-sans text-brick-ink antialiased;
+    background-color: #faf7f2;
+    background-image: radial-gradient(rgba(26, 26, 26, 0.06) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+}
