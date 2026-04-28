@@ -261,6 +261,18 @@ function NavBar({ view, onLogo, onBrowse, onBuild }) {
   );
 }
 
+function FooterLink({ children }) {
+  return (
+    <button
+      type="button"
+      className="text-brick-ink/70 hover:text-brick-cobalt"
+      onClick={() => {}}
+    >
+      {children}
+    </button>
+  );
+}
+
 function LandingView({ onStart, onFeed, onCardClick }) {
   const preview = FEED_BUILDS.slice(0, 3);
   return (
@@ -396,16 +408,10 @@ function LandingView({ onStart, onFeed, onCardClick }) {
             <span className="font-display text-sm font-semibold text-brick-ink">brickstack.ai</span>
           </div>
           <p className="text-sm text-brick-ink/50">© 2026 brickstack.ai</p>
-          <div className="flex gap-6 text-sm text-brick-ink/70">
-            <a href="#" className="hover:text-brick-cobalt">
-              About
-            </a>
-            <a href="#" className="hover:text-brick-cobalt">
-              Pricing
-            </a>
-            <a href="#" className="hover:text-brick-cobalt">
-              Discord
-            </a>
+          <div className="flex gap-6 text-sm">
+            <FooterLink>About</FooterLink>
+            <FooterLink>Pricing</FooterLink>
+            <FooterLink>Discord</FooterLink>
           </div>
         </div>
       </footer>
@@ -417,6 +423,7 @@ function CreateView({
   prompt,
   setPrompt,
   onGenerate,
+  canSubmit,
   generating,
   loaderIndex,
   showResults,
@@ -458,11 +465,14 @@ function CreateView({
           <button
             type="button"
             onClick={onGenerate}
-            disabled={generating}
+            disabled={generating || !canSubmit}
             className="mt-4 w-full rounded-2xl bg-brick-yellow py-4 text-base font-semibold text-brick-ink shadow-xl shadow-brick-yellow/20 transition hover:scale-[1.02] hover:shadow-2xl disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98]"
           >
             {generating ? "Generating…" : "Generate"}
           </button>
+          {!canSubmit && !generating && (
+            <p className="mt-2 text-center text-xs text-brick-ink/45">Add a description to generate.</p>
+          )}
         </div>
       </aside>
 
@@ -485,11 +495,21 @@ function CreateView({
           )}
 
           {generating && (
-            <div className="flex min-h-[360px] flex-col items-center justify-center rounded-2xl border border-black/5 bg-white/70 p-8 shadow-xl shadow-black/5">
+            <div
+              className="flex min-h-[360px] flex-col items-center justify-center rounded-2xl border border-black/5 bg-white/70 p-8 shadow-xl shadow-black/5"
+              aria-busy="true"
+              aria-label="Generating kit preview"
+            >
               <span className="text-5xl animate-spin-slow" aria-hidden>
                 🧱
               </span>
-              <p className="mt-6 font-mono text-sm text-brick-ink/70">{loaderMessage}</p>
+              <p
+                className="mt-6 font-mono text-sm text-brick-ink/70"
+                aria-live="polite"
+                aria-atomic="true"
+              >
+                {loaderMessage}
+              </p>
             </div>
           )}
 
@@ -502,7 +522,10 @@ function CreateView({
                     value={buildTitle}
                     onChange={(e) => setBuildTitle(e.target.value)}
                     onBlur={() => setTitleEditing(false)}
-                    onKeyDown={(e) => e.key === "Enter" && setTitleEditing(false)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") setTitleEditing(false);
+                      if (e.key === "Escape") setTitleEditing(false);
+                    }}
                     className="w-full rounded-lg border border-brick-cobalt/40 bg-white px-3 py-2 font-display text-lg font-semibold text-brick-ink outline-none ring-2 ring-brick-cobalt/20"
                   />
                 ) : (
@@ -749,8 +772,12 @@ export default function App() {
 
   useEffect(() => () => clearTimers(), [clearTimers]);
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [view]);
+
   const handleGenerate = () => {
-    if (generating) return;
+    if (generating || !prompt.trim()) return;
     setBuildTitle(titleFromPrompt(prompt));
     runGeneration(false);
   };
@@ -808,6 +835,7 @@ export default function App() {
           prompt={prompt}
           setPrompt={setPrompt}
           onGenerate={handleGenerate}
+          canSubmit={prompt.trim().length > 0}
           generating={generating}
           loaderIndex={loaderIndex}
           showResults={showResults}

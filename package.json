@@ -2,7 +2,12 @@
   "name": "brickstack-ai",
   "private": true,
   "version": "0.0.1",
+  "description": "brickstack.ai pitch demo — custom LEGO® kit generator (mocked UI)",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/keithanp/BRICKSTACK.git"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
